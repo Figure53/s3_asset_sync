@@ -1,5 +1,5 @@
 require 'colorize'
-require 'aws-sdk-core'
+require 'aws-sdk'
 require 's3_asset_sync/railtie' if defined?(Rails)
 
 module S3AssetSync
@@ -11,20 +11,22 @@ module S3AssetSync
   def self.sync
     puts "Syncing assets to S3...".yellow
 
-    Aws.config.update({
-      credentials: Aws::Credentials.new(
-        Rails.application.config.s3_asset_sync.s3_access_key,
-        Rails.application.config.s3_asset_sync.s3_secret_access_key
-      ),
-      region: Rails.application.config.s3_asset_sync.s3_region
-    })
+    s3 = Aws::S3.new(
+      access_key_id: Rails.application.config.s3_asset_sync.s3_access_key,
+      secret_access_key: Rails.application.config.s3_asset_sync.s3_secret_access_key
+    )
 
-    s3 = Aws::S3::Client.new
+    bucket = s3.buckets[Rails.application.config.s3_bucket]
+
+    if !bucket.exists?
+      puts "Failed to find bucket on S3!".red
+      return
+    end
 
     Dir.foreach(Rails.root.join('public','assets')) do |file|
       next if file == '.' || file == '..'
       puts "SYNC: #{file}"
-      self.s3_upload_object(s3, file) unless self.s3_object_exists?(s3, file)
+      self.s3_upload_object(bucket, file) unless self.s3_object_exists?(bucket, file)
     end
 
     puts "Asset sync successfully completed...".green
@@ -38,28 +40,24 @@ module S3AssetSync
   def self.purge
     puts "Cleaning assets in S3...".yellow
 
-    Aws.config.update({
-      credentials: Aws::Credentials.new(
-        Rails.application.config.s3_asset_sync.s3_access_key,
-        Rails.application.config.s3_asset_sync.s3_secret_access_key
-      ),
-      region: Rails.application.config.s3_asset_sync.s3_region
-    })
+    # FIXME: use aws-sdk-v1 for this
+    # s3 = Aws::S3.new(
+    #   access_key_id: Rails.application.config.s3_asset_sync.s3_access_key,
+    #   secret_access_key: Rails.application.config.s3_asset_sync.s3_secret_access_key
+    # )
 
-    s3 = Aws::S3::Client.new
+    # keys = []
 
-    keys = []
+    # s3.list_objects(bucket:Rails.application.config.s3_asset_sync.s3_bucket).each do |response|
+    #   keys += response.contents.map(&:key)
+    # end
 
-    s3.list_objects(bucket:Rails.application.config.s3_asset_sync.s3_bucket).each do |response|
-      keys += response.contents.map(&:key)
-    end
-
-    keys.each do |key|
-      if !File.exists?(Rails.root.join('public', 'assets', key))
-        self.s3_delete_object(s3, key) 
-        puts "DELETED: #{key}"
-      end
-    end
+    # keys.each do |key|
+    #   if !File.exists?(Rails.root.join('public', 'assets', key))
+    #     self.s3_delete_object(s3, key)
+    #     puts "DELETED: #{key}"
+    #   end
+    # end
 
     puts "Asset clean successfully completed...".green
   end
@@ -67,38 +65,28 @@ module S3AssetSync
   ##
   # Check if a key exists in the specified S3 Bucket.
   #
-  def self.s3_object_exists?(client, key)
-    begin
-      client.head_object(
-        bucket: Rails.application.config.s3_asset_sync.s3_bucket,
-        key: key
-      )
-      return true
-    rescue
-      return false
-    end
+  def self.s3_object_exists?(bucket, key)
+    obj = bucket.objects[key]
+    obj.exists?
   end
 
   ##
   # Uploads an object to the specified S3 Bucket.
   #
-  def self.s3_upload_object(client, key)
-    resp = client.put_object(
-      acl: "public-read",
-      bucket: Rails.application.config.s3_asset_sync.s3_bucket,
-      body: File.open(Rails.root.join('public','assets', key)),
-      key: key
-    )
+  def self.s3_upload_object(bucket, key)
+    obj = bucket.objects[key]
+    obj.write(Rails.root.join('public','assets', key))
+    obj
   end
 
   ##
   # Deletes an object from the specified S3 Bucket.
   #
-  def self.s3_delete_object(client, key)
-    resp = client.delete_object(
-      bucket: Rails.application.config.s3_asset_sync.s3_bucket,
-      key: key
-    )
+  def self.s3_delete_object(bucket, key)
+    obj = bucket.objects[key]
+    if obj.exists?
+      obj.delete
+    end
   end
 
 end
