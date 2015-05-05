@@ -1,6 +1,7 @@
 require 'colorize'
 require 'aws-sdk'
 require 's3_asset_sync/railtie' if defined?(Rails)
+require 'pathname'
 
 module S3AssetSync
 
@@ -23,13 +24,25 @@ module S3AssetSync
       return
     end
 
-    Dir.foreach(Rails.root.join('public','assets')) do |file|
-      next if file == '.' || file == '..'
-      puts "SYNC: #{file}"
-      self.s3_upload_object(bucket, file) unless self.s3_object_exists?(bucket, file)
-    end
+    self.upload_directory(bucket, Rails.root.join('public','assets'))
 
     puts "Asset sync successfully completed...".green
+  end
+
+  def self.upload_directory(bucket, directory)
+    Dir.foreach(directory) do |file|
+      next if file == '.' || file == '..'
+
+      # always deal in absolute filepaths at this level
+      file = File.join(directory, file)
+
+      if File.directory?(file)
+        puts "  checking #{ file }"
+        self.upload_directory(bucket, file)
+      else
+        self.s3_upload_object(bucket, file) unless self.s3_object_exists?(bucket, file)
+      end
+    end
   end
 
   ##
@@ -65,7 +78,10 @@ module S3AssetSync
   ##
   # Check if a key exists in the specified S3 Bucket.
   #
-  def self.s3_object_exists?(bucket, key)
+  def self.s3_object_exists?(bucket, file)
+    filepath = Pathname.new(file)
+    key = filepath.relative_path_from(Rails.root.join('public', 'assets'))
+
     obj = bucket.objects[key]
     obj.exists?
   end
@@ -73,7 +89,11 @@ module S3AssetSync
   ##
   # Uploads an object to the specified S3 Bucket.
   #
-  def self.s3_upload_object(bucket, key)
+  def self.s3_upload_object(bucket, file)
+    filepath = Pathname.new(file)
+    key = filepath.relative_path_from(Rails.root.join('public', 'assets'))
+
+    puts "#{file} -> #{key}"
     obj = bucket.objects[key]
     obj.write(Rails.root.join('public','assets', key))
     obj
