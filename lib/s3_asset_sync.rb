@@ -75,14 +75,17 @@ module S3AssetSync
     puts "Asset clean successfully completed...".green
   end
 
+  def self.get_key(file)
+    filepath = Pathname.new(file)
+    # everything should go in /assets on S3 since Rails generates URLs in the form of /assets/$OBJECT
+    filepath.relative_path_from(Rails.root.join('public'))
+  end
+
   ##
   # Check if a key exists in the specified S3 Bucket.
   #
   def self.s3_object_exists?(bucket, file)
-    filepath = Pathname.new(file)
-    # everything should go in /assets on S3 since Rails generates URLs in the form of /assets/$OBJECT
-    key = filepath.relative_path_from(Rails.root.join('public'))
-
+    key = self.get_key(file)
     obj = bucket.objects[key]
     obj.exists?
   end
@@ -91,10 +94,9 @@ module S3AssetSync
   # Uploads an object to the specified S3 Bucket.
   #
   def self.s3_upload_object(bucket, file)
-    filepath = Pathname.new(file)
-    key = filepath.relative_path_from(Rails.root.join('public', 'assets'))
-
+    key = self.get_key(file)
     puts "#{file} -> #{key}"
+
     obj = bucket.objects[key]
     obj.write(Rails.root.join('public','assets', key))
     obj
@@ -111,3 +113,4 @@ module S3AssetSync
   end
 
 end
+
