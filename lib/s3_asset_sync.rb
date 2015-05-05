@@ -37,7 +37,6 @@ module S3AssetSync
       file = File.join(directory, file)
 
       if File.directory?(file)
-        puts "  checking #{ file }"
         self.upload_directory(bucket, file)
       else
         self.s3_upload_object(bucket, file) unless self.s3_object_exists?(bucket, file)
