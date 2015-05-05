@@ -98,7 +98,7 @@ module S3AssetSync
     puts "#{file} -> #{key}"
 
     obj = bucket.objects[key]
-    obj.write(Rails.root.join('public','assets', key))
+    obj.write(Rails.root.join('public', key))
     obj
   end
 
