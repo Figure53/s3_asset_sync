@@ -17,5 +17,5 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
 
   s.add_dependency 'colorize'
-  s.add_dependency 'aws-sdk', '~> 1.54.0'
+  s.add_dependency 'aws-sdk', '~> 2.0'
 end
