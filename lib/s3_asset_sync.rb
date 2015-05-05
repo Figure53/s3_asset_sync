@@ -16,7 +16,7 @@ module S3AssetSync
       secret_access_key: Rails.application.config.s3_asset_sync.s3_secret_access_key
     )
 
-    bucket = s3.buckets[Rails.application.config.s3_bucket]
+    bucket = s3.buckets[Rails.application.config.s3_asset_sync.s3_bucket]
 
     if !bucket.exists?
       puts "Failed to find bucket on S3!".red
