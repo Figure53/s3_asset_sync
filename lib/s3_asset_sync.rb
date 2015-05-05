@@ -11,7 +11,7 @@ module S3AssetSync
   def self.sync
     puts "Syncing assets to S3...".yellow
 
-    s3 = Aws::S3.new(
+    s3 = AWS::S3.new(
       access_key_id: Rails.application.config.s3_asset_sync.s3_access_key,
       secret_access_key: Rails.application.config.s3_asset_sync.s3_secret_access_key
     )
@@ -41,7 +41,7 @@ module S3AssetSync
     puts "Cleaning assets in S3...".yellow
 
     # FIXME: use aws-sdk-v1 for this
-    # s3 = Aws::S3.new(
+    # s3 = AWS::S3.new(
     #   access_key_id: Rails.application.config.s3_asset_sync.s3_access_key,
     #   secret_access_key: Rails.application.config.s3_asset_sync.s3_secret_access_key
     # )
