@@ -80,7 +80,8 @@ module S3AssetSync
   #
   def self.s3_object_exists?(bucket, file)
     filepath = Pathname.new(file)
-    key = filepath.relative_path_from(Rails.root.join('public', 'assets'))
+    # everything should go in /assets on S3 since Rails generates URLs in the form of /assets/$OBJECT
+    key = filepath.relative_path_from(Rails.root.join('public'))
 
     obj = bucket.objects[key]
     obj.exists?
