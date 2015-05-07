@@ -92,7 +92,7 @@ module S3AssetSync
       puts "#{file} -> #{key}"
 
       obj = @bucket.objects[key]
-      obj.write(File.join(@file_root, key))
+      obj.write(File.read(File.join(@file_root, key)))
       obj
     end
   end
