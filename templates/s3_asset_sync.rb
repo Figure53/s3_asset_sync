@@ -6,3 +6,4 @@ Rails.application.config.s3_asset_sync.s3_bucket = "YOUR_BUCKET_NAME"
 Rails.application.config.s3_asset_sync.s3_region = "YOUR_REGION"
 Rails.application.config.s3_asset_sync.s3_access_key = "YOUR_ACCESS_KEY"
 Rails.application.config.s3_asset_sync.s3_secret_access_key = "YOUR_SECRET_ACCESS_KEY"
+Rails.application.config.s3_asset_sync.parallel_clients = 1

@@ -18,4 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'colorize'
   s.add_dependency 'aws-sdk', '~> 1.64.0'
+
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'rspec'
 end

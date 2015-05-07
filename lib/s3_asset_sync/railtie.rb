@@ -1,12 +1,13 @@
 module S3AssetSync
   class Railtie < Rails::Railtie
     config.s3_asset_sync = ActiveSupport::OrderedOptions.new
-    
+
     config.s3_asset_sync.run_after_precompile = true
     config.s3_asset_sync.s3_bucket = "YOUR_BUCKET_NAME"
     config.s3_asset_sync.endpoint = "YOUR_END_POINT"
     config.s3_asset_sync.s3_access_key = "YOUR_ACCESS_KEY"
     config.s3_asset_sync.s3_secret_access_key = "YOUR_SECRET_ACCESS_KEY"
+    config.s3_asset_sync.parallel_clients = 1
 
     rake_tasks do
       load "tasks/s3_asset_sync.rake"

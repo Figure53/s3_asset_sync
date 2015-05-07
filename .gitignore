@@ -3,3 +3,6 @@ log/*.log
 pkg/
 .DS_Store
 *.gem
+
+# too many secrets
+spec/s3_config.yml
