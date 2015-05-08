@@ -1,5 +1,6 @@
 require 'pathname'
 require 'thread'
+require 'mimemagic'
 
 module S3AssetSync
   class Uploader
@@ -92,7 +93,24 @@ module S3AssetSync
       puts "#{file} -> #{key}"
 
       obj = @bucket.objects[key]
-      obj.write(File.read(File.join(@file_root, key)))
+
+      metadata = {}
+
+      # metadata
+      if /\.gz$/ =~ key.to_s
+        metadata[:content_encoding] = 'gzip'
+      end
+
+      # attempt to access mimetype
+      begin
+        mime_type = ::MimeMagic.by_path(key.to_s)
+        metadata[:content_type] = mime_type
+      rescue => ex
+        # it's okay to lose this information
+        puts "unable to determine mime type for #{ key }: #{ ex.message }"
+      end
+
+      obj.write(File.read(File.join(@file_root, key)), metadata)
       obj
     end
   end
