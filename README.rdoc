@@ -33,3 +33,7 @@ To manually syncronize assets run:
 Expired assets won't be automatically removed from S3 as some nodes within a load balanced setup may temporarily require older assets. To delete expired assets from S3 run:
 
   rake assets:purge_s3
+
+== Tests
+
+Test images taken from https://github.com/iconic/open-iconic

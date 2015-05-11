@@ -73,7 +73,7 @@ module S3AssetSync
 
     def get_key(file)
       filepath = Pathname.new(file)
-      filepath.relative_path_from(@file_root)
+      filepath.relative_path_from(@file_root).to_s
     end
 
     ##
@@ -103,7 +103,7 @@ module S3AssetSync
 
       # attempt to access mimetype
       begin
-        mime_type = ::MimeMagic.by_path(key.to_s)
+        mime_type = ::MimeMagic.by_path(key.to_s).type
         metadata[:content_type] = mime_type
       rescue => ex
         # it's okay to lose this information
